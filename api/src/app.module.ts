@@ -1,15 +1,18 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FormDataModule } from './FormData/formData.module';
+import { UserModule } from './User/user.module';
+import { IamModule } from './iam/iam.module';
+require('dotenv').config();
 
 @Module({
   imports: [
     UserModule,
     FormDataModule,
-    MongooseModule.forRoot('mongodb+srv://chikudev:chikudev@cluster0.udpe0iy.mongodb.net/test?retryWrites=true&w=majority'),
+    IamModule,
+    MongooseModule.forRoot(process.env.DB),
   ],
   controllers: [AppController],
   providers: [AppService],
