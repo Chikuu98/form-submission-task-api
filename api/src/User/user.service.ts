@@ -30,18 +30,17 @@ export class UserService {
         }
     }
 
-    async updateUser(userId: string, updateUserDto: UpdateUserDto, req: any): Promise<User | null> {
+    async updateUser(userId: string, attrs: Partial<User>, req: any): Promise<User | null> {
         try {
             const _id = req.user.sub;
             if (_id != userId) throw new BadRequestException('You cannot update this user');
-            
+
             const user = await this.userModel.findById(userId).exec();
             if (!user) {
                 return null;
             }
 
-            user.name = updateUserDto.name;
-            user.email = updateUserDto.email;
+            Object.assign(user, attrs);
 
             await user.save();
             return user;
