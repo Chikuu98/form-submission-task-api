@@ -4,6 +4,7 @@ import { AuthType } from 'src/iam/authentication/enums/auth-type.enums';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { logger } from 'src/SystemLogs/logs.service';
+import { UserEnum } from './enum/user.enum';
 
 @Auth(AuthType.Bearer)
 @Controller('user')
@@ -31,7 +32,7 @@ export class UserController {
     try {
       const updatedUser = await this.userService.updateUser(userId, updateUserDto, req);
       if (!updatedUser) {
-        throw new NotFoundException(`User with id ${userId} not found`);
+        throw new NotFoundException(UserEnum.USER_NOT_FOUND);
       }
       return updatedUser;
     }

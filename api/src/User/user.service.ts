@@ -3,6 +3,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './user.model';
 import { logger } from 'src/SystemLogs/logs.service';
+import { UserEnum } from './enum/user.enum';
 
 @Injectable()
 export class UserService {
@@ -25,10 +26,10 @@ export class UserService {
             const _id = req.user.sub;
             const deleted_user = this.userModel.findOneAndDelete({ _id }).exec();
             if (deleted_user) {
-                return `User with _id ${_id} has been deleted.`;
+                return UserEnum.USER_SUCCESSFULLY_DELETED;
             }
             else {
-                return `User with _id ${_id} not found`;
+                return UserEnum.USER_NOT_FOUND;
             }
         }
         catch (error) {
@@ -40,7 +41,7 @@ export class UserService {
     async updateUser(userId: string, attrs: Partial<User>, req: any): Promise<User | null> {
         try {
             const _id = req.user.sub;
-            if (_id != userId) throw new BadRequestException('You cannot update this user');
+            if (_id != userId) throw new BadRequestException(UserEnum.YOU_CANNOT_UPDATE_THIS_USER);
 
             const user = await this.userModel.findById(userId).exec();
             if (!user) {

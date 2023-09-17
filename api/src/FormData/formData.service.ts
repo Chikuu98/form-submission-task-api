@@ -3,6 +3,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { FormData } from './formData.model';
 import { logger } from 'src/SystemLogs/logs.service';
+import { FormdataEnum } from './enum/formdata.enum';
 
 @Injectable()
 export class FormDataService {
@@ -49,10 +50,10 @@ export class FormDataService {
     try {
       const deleted_item = this.formDataModel.findOneAndDelete({ itemId }).exec();
       if (deleted_item) {
-        return `User with _id ${itemId} has been deleted.`;
+        return FormdataEnum.USER_SUCCESSFULLY_DELETED;
       }
       else {
-        return `User with _id ${itemId} not found`;
+        return FormdataEnum.USER_NOT_FOUND;
       }
     }
     catch (error) {

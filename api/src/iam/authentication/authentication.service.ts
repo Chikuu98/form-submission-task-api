@@ -13,6 +13,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/User/user.model';
 import { logger } from 'src/SystemLogs/logs.service';
+import { AuthenticationEnums } from './enums/authentication.enum';
 
 
 @Injectable()
@@ -35,10 +36,10 @@ export class AuthenticationService {
             user.name = signUpDto.name;
 
             await user.save();
-            return ('user registered successfully');
+            return (AuthenticationEnums.REGISTRATION_SUCCESS);
         } catch (error) {
             logger.log('error', 'class:AuthenticationService, method:signUp', { trace: error });
-            const uniqueViolationErrorCode = 'ER_DUP_ENTRY';
+            const uniqueViolationErrorCode = AuthenticationEnums.ER_DUP_ENTRY;
             if (error.code === uniqueViolationErrorCode) {
                 throw new ConflictException();
             }
@@ -54,14 +55,14 @@ export class AuthenticationService {
                 email: signInDto.email,
             }).exec();
             if (!user) {
-                throw new UnauthorizedException('User does not exists');
+                throw new UnauthorizedException(AuthenticationEnums.USER_NOT_FOUND);
             }
             const IsMatch = await this.hashingService.compare(
                 signInDto.password,
                 user.password
             );
             if (!IsMatch) {
-                throw new UnauthorizedException('Password does not match');
+                throw new UnauthorizedException(AuthenticationEnums.PASSWORD_MISS_MATCH);
             }
             return await this.generateTokens(user);
         }
@@ -120,14 +121,14 @@ export class AuthenticationService {
             if (isValid) {
                 await this.refreshTokenIdsStorage.invalidate(user.id);
             } else {
-                throw new Error('Refresh token is invalid');
+                throw new Error(AuthenticationEnums.INVALID_REFRESH_TOKEN);
             }
             return this.generateTokens(user);
         }
         catch (error) {
             logger.log('error', 'class:AuthenticationService, method:refreshTokens', { trace: error });
             if (error instanceof InvalidatedRefreshTokenError) {
-                throw new UnauthorizedException('Access denied');
+                throw new UnauthorizedException(AuthenticationEnums.ACCESS_DENIED);
             }
             throw new UnauthorizedException();
         }

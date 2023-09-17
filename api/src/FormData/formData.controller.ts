@@ -5,6 +5,7 @@ import { Auth } from 'src/iam/authentication/decorators/auth.decorator';
 import { AuthType } from 'src/iam/authentication/enums/auth-type.enums';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { logger } from 'src/SystemLogs/logs.service';
+import { FormdataEnum } from './enum/formdata.enum';
 
 @Auth(AuthType.Bearer)
 @Controller('forms')
@@ -36,7 +37,7 @@ export class FormDataController {
     try {
       const updatedItem = await this.formService.updateItem(itemId, updateItemDto);
       if (!updatedItem) {
-        throw new NotFoundException(`FormData with id ${itemId} not found`);
+        throw new NotFoundException(FormdataEnum.ITEM_NOT_FOUND);
       }
       return updatedItem;
     } catch (error) {
