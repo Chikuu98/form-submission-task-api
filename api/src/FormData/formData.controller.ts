@@ -4,6 +4,7 @@ import { FormData } from './formData.model';
 import { Auth } from 'src/iam/authentication/decorators/auth.decorator';
 import { AuthType } from 'src/iam/authentication/enums/auth-type.enums';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { logger } from 'src/SystemLogs/logs.service';
 
 @Auth(AuthType.Bearer)
 @Controller('forms')
@@ -12,8 +13,14 @@ export class FormDataController {
 
   @Post()
   async create(@Body() formData: FormData): Promise<FormData> {
-    const createdForm = await this.formService.create(formData);
-    return createdForm;
+    try {
+      const createdForm = await this.formService.create(formData);
+      return createdForm;
+    }
+    catch (error) {
+      logger.log('error', 'class:FormDataController, method:create', { trace: error });
+      throw error;
+    }
   }
 
   @Get()

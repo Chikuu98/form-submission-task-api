@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './user.model';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { logger } from 'src/SystemLogs/logs.service';
 
 @Injectable()
 export class UserService {
@@ -11,7 +11,13 @@ export class UserService {
     ) { }
 
     async findAll(): Promise<User[]> {
-        return this.userModel.find().exec();
+        try{
+            return this.userModel.find().exec();
+        }
+        catch(error){
+            logger.log('error', 'class:UserService, method:findAll', { trace: error });
+            throw error;
+        }
     }
 
     async removeUser(req: any) {
@@ -26,7 +32,8 @@ export class UserService {
             }
         }
         catch (error) {
-            throw `Error deleting user: ${error}`;
+            logger.log('error', 'class:UserService, method:removeUser', { trace: error });
+            throw error;
         }
     }
 
@@ -46,6 +53,7 @@ export class UserService {
             return user;
         }
         catch (error) {
+            logger.log('error', 'class:UserService, method:updateUser', { trace: error });
             throw error;
         }
     }

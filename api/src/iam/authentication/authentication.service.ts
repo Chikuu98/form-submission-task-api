@@ -27,22 +27,25 @@ export class AuthenticationService {
     ) { }
 
     async signUp(signUpDto: SignUpDto) {
-
         try {
             const user = new this.userModel();
+
             user.email = signUpDto.email;
             user.password = await this.hashingService.hash(signUpDto.password);
             user.name = signUpDto.name;
+
             await user.save();
+            return ('user registered successfully');
         } catch (error) {
+            logger.log('error', 'class:AuthenticationService, method:signUp', { trace: error });
             const uniqueViolationErrorCode = 'ER_DUP_ENTRY';
             if (error.code === uniqueViolationErrorCode) {
                 throw new ConflictException();
             }
-            logger.log('error', 'class:AuthenticationService, method:signUp', { trace: error });
-            throw error;
+            else {
+                throw error;
+            }
         }
-        return ('success');
     }
 
     async signIn(signInDto: SignInDto) {
@@ -64,29 +67,36 @@ export class AuthenticationService {
         }
         catch (error) {
             logger.log('error', 'class:AuthenticationService, method:signIn', { trace: error });
+            throw error;
         }
     }
 
     async generateTokens(user: any) {
-        const refreshTokenId = randomUUID();
-        const [accessToken, refreshToken] = await Promise.all([
-            this.signToken<Partial<ActiveUserData>>(
-                user.id,
-                this.jwtConfiguration.accessTokenTtl,
-                { email: user.email }
-            ),
-            this.signToken(user.id, this.jwtConfiguration.refreshTokenTtl, {
-                refreshTokenId
-            })
-        ]);
+        try {
+            const refreshTokenId = randomUUID();
+            const [accessToken, refreshToken] = await Promise.all([
+                this.signToken<Partial<ActiveUserData>>(
+                    user.id,
+                    this.jwtConfiguration.accessTokenTtl,
+                    { email: user.email }
+                ),
+                this.signToken(user.id, this.jwtConfiguration.refreshTokenTtl, {
+                    refreshTokenId
+                })
+            ]);
 
-        await this.refreshTokenIdsStorage.insert(user.id, refreshTokenId);
-        return {
-            accessToken,
-            refreshToken,
-            id: user.id,
-            name: (user.name) ? user.name : user.user_name
-        };
+            await this.refreshTokenIdsStorage.insert(user.id, refreshTokenId);
+            return {
+                accessToken,
+                refreshToken,
+                id: user.id,
+                name: (user.name) ? user.name : user.user_name
+            };
+        }
+        catch (error) {
+            logger.log('error', 'class:AuthenticationService, method:generateTokens', { trace: error });
+            throw error;
+        }
     }
 
     async refreshTokens(refreshTokenDto: RefreshTokenDto) {
@@ -113,8 +123,10 @@ export class AuthenticationService {
                 throw new Error('Refresh token is invalid');
             }
             return this.generateTokens(user);
-        } catch (err) {
-            if (err instanceof InvalidatedRefreshTokenError) {
+        }
+        catch (error) {
+            logger.log('error', 'class:AuthenticationService, method:refreshTokens', { trace: error });
+            if (error instanceof InvalidatedRefreshTokenError) {
                 throw new UnauthorizedException('Access denied');
             }
             throw new UnauthorizedException();
@@ -122,17 +134,23 @@ export class AuthenticationService {
     }
 
     async signToken<T>(userId: number, expiresIn: number, payload?: T) {
-        return await this.jwtService.signAsync(
-            {
-                sub: userId,
-                ...payload,
-            },
-            {
-                audience: this.jwtConfiguration.audience,
-                issuer: this.jwtConfiguration.issuer,
-                secret: this.jwtConfiguration.secret,
-                expiresIn,
-            }
-        );
+        try {
+            return await this.jwtService.signAsync(
+                {
+                    sub: userId,
+                    ...payload,
+                },
+                {
+                    audience: this.jwtConfiguration.audience,
+                    issuer: this.jwtConfiguration.issuer,
+                    secret: this.jwtConfiguration.secret,
+                    expiresIn,
+                }
+            );
+        }
+        catch (error) {
+            logger.log('error', 'class:AuthenticationService, method:signToken', { trace: error });
+            throw error;
+        }
     }
 }

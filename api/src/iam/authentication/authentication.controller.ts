@@ -9,24 +9,27 @@ import { AuthType } from './enums/auth-type.enums';
 @Auth(AuthType.None)
 @Controller('authentication')
 export class AuthenticationController {
-    constructor(private readonly authService: AuthenticationService) {}
+    constructor(private readonly authService: AuthenticationService) { }
 
-    @Post('register/')
-    signUp(@Body() signUpDto: SignUpDto) {
+    @Post('register')
+    signUp(
+        @Body() signUpDto: SignUpDto
+    ) {
         return this.authService.signUp(signUpDto);
     }
 
-
-
     @Post('login')
-    signIn(@Body() signInDto: SignInDto) {
+    signIn(
+        @Body() signInDto: SignInDto
+    ) {
         return this.authService.signIn(signInDto);
     }
 
-
     @HttpCode(HttpStatus.OK)
     @Post('token-refresh')
-    refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
+    refreshTokens(
+        @Body() refreshTokenDto: RefreshTokenDto
+    ) {
         return this.authService.refreshTokens(refreshTokenDto);
     }
 }

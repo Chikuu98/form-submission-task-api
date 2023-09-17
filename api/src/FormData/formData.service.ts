@@ -2,18 +2,31 @@ import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { FormData } from './formData.model';
+import { logger } from 'src/SystemLogs/logs.service';
 
 @Injectable()
 export class FormDataService {
   constructor(@InjectModel('FormData') private readonly formDataModel: Model<FormData>) { }
 
   async create(data: FormData): Promise<FormData> {
-    const createdForm = new this.formDataModel(data);
-    return createdForm.save();
+    try {
+      const createdForm = new this.formDataModel(data);
+      return createdForm.save();
+    }
+    catch (error) {
+      logger.log('error', 'class:FormDataService, method:create', { trace: error });
+      throw error;
+    }
   }
 
   async findAll(): Promise<FormData[]> {
-    return this.formDataModel.find().exec();
+    try {
+      return this.formDataModel.find().exec();
+    }
+    catch (error) {
+      logger.log('error', 'class:FormDataService, method:findAll', { trace: error });
+      throw error;
+    }
   }
 
   async updateItem(itemId: string, attrs: Partial<FormData>): Promise<FormData | null> {
@@ -27,6 +40,7 @@ export class FormDataService {
       return item;
     }
     catch (error) {
+      logger.log('error', 'class:FormDataService, method:updateItem', { trace: error });
       throw error;
     }
   }
@@ -42,7 +56,8 @@ export class FormDataService {
       }
     }
     catch (error) {
-      throw `Error deleting user: ${error}`;
+      logger.log('error', 'class:FormDataService, method:removeItem', { trace: error });
+      throw error;
     }
   }
 }
