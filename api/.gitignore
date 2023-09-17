@@ -2,8 +2,11 @@
 /dist
 /node_modules
 
+.env
+
 # Logs
 logs
+/log
 *.log
 npm-debug.log*
 pnpm-debug.log*
